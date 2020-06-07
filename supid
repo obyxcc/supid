@@ -1,0 +1,67 @@
+#! /bin/bash
+
+TIMETOCOMMIT=03
+u_flag=''
+i_flag=''
+PACKAGES=""
+UPDATES="0"
+
+GREYBG='\033[40m'
+GREEN='\033[0;32m'
+CYANB='\033[1;36m'
+GREENB='\033[1;32m'
+NC='\033[0m' # No Color
+
+install() {
+	pacman -S --noconfirm --disable-download-timeout --noprogressbar $PACKAGES
+}
+
+update() {
+	pacman -Syu --noconfirm --disable-download-timeout --noprogressbar
+}
+
+displayUsage() {
+	printf "
+usage: autoinst [-h                           show this help message]
+                [-i \"packages\"            install specified packages]
+                [-u                     perform a full system update]
+                [-s hour       specify the starting hour, default 03]\n"
+ exit 0
+}
+
+commitTransaction() {
+	clear
+	[ u_flag ] && update
+	[ i_flag ] && install
+
+	# uncomment to have your system poweroff after finishing
+	# echo "Powering off..." && poweroff
+}
+
+while getopts 'hi:us:' flag; do
+	case "${flag}" in
+		h) displayUsage ;;
+		i) i_flag='true' && PACKAGES="${OPTARG}" ;;
+		u) u_flag='true' ;;
+		s) TIMETOCOMMIT="${OPTARG}" ;;
+		*) displayUsage ;;
+	esac
+done
+
+[ $OPTIND -eq 1 ] && displayUsage && exit 1
+
+[ `whoami` != root ] && echo "Please run this script as root or using sudo" && exit 1
+
+[ $u_flag ] && echo "Refreshing pacman database..." && pacman -Sy >> /dev/null && UPDATES="$(pacman -Qu | wc -l)"
+
+while true; do
+	HOUR=$(date "+%H")
+	clear
+printf "${GREEN}╔═[${CYANB}Scheduled Update and Package Installer of Doom${GREEN}]═╗
+║${GREENB}${GREYBG} Transaction will contain:                        ${GREEN}║"
+[ $u_flag ] && printf "\n║${GREENB} System update                             ${NC}$UPDATES pkgs ${GREEN}║"
+[ $i_flag ] && printf "\n║${GREENB} Package installation                      ${NC}$(echo $PACKAGES | wc -w) pkgs ${GREEN}║"
+printf "\n${GREEN}╚═[${CYANB}Time  ${NC}$(date "+%H:%M:%S")${GREEN}]═[${CYANB}Continuing  ${NC}$TIMETOCOMMIT:00${GREEN}]═════════════╝\n"
+[ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
+	sleep 1s
+done
