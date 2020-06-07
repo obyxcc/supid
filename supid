@@ -6,7 +6,7 @@ IFLAG=''
 PFLAG=''
 PACKAGES=""
 NUMPACKAGES=""
-UPDATES="43"
+UPDATES=""
 
 BBG='\033[40m' # black background
 RBG='\033[41m' # red background
