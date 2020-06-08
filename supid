@@ -72,30 +72,24 @@ while true; do
 	clear
 
 printf "${G}╔═[${CB}Scheduled Update and Package Installer of Doom${G}]═╗\n"
-
 printf "║${GB}${BBG} Transaction will contain:                        ${G}║"
-
-
 if [ $UFLAG ]; then
 	printf "\n║${CB} System update%$(( 30 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
 	while IFS= read -r line; do
-	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n" 
-    done <<< "$UPDATES"
+	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n"
+		done <<< "$UPDATES"
 fi
-
 if [ $IFLAG ]; then
 	printf "║${CB} Package installation%$(( 23 - ${#NUMPACKAGES} ))s${NC}$NUMPACKAGES pkgs ${G}║\n" " "
 	for p in ${PACKAGES[@]}; do
 		printf "║ ${GB}-${NC} $p%$(( 47 - ${#p} ))s${G}║\n" " "
 done
 fi
-
 if [ $PFLAG ]; then
 	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} POWEROFF ${G}═╝\n"
 else
 	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝\n"
 fi
-
 
 [ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
 	sleep 1s
