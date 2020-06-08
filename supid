@@ -110,7 +110,7 @@ printf "${G}╔═[${CB}Scheduled Update and Package Installer of Doom${G}]═�
 printf "║${GB}${BBG} Transaction will contain:                        ${G}║\n"
 if [ $UFLAG ]; then
 	printf "║${CB} System update%$(( 30 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
-	while IFS= read -r line; do
+	while IFS= read -r line && [ $NUMUPDATES -gt 0 ]; do
 	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n"
 		done <<< "$UPDATES"
 fi
