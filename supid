@@ -40,7 +40,7 @@ install() {
 dlUpdate() {
 	case $PACKAGEMANAGER in
 		"xbps")
-			xbps-install -Du ;;
+			xbps-install -SuD ;;
 		"pacman")
 			pacman -Syw ;;
 		"apt")
@@ -109,7 +109,7 @@ while true; do
 printf "${G}╔═[${CB}Scheduled Update and Package Installer of Doom${G}]═╗\n"
 printf "║${GB}${BBG} Transaction will contain:                        ${G}║\n"
 if [ $UFLAG ]; then
-	printf "║${CB} System update%$(( 30 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
+	printf "║${CB} Download updates%$(( 27 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
 	while IFS= read -r line && [ $NUMUPDATES -gt 0 ]; do
 	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n"
 		done <<< "$UPDATES"
@@ -125,6 +125,8 @@ if [ $PFLAG ]; then
 else
 	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}\n"
 fi
+
+[ $UFLAG ] && printf "\n${GB}*${NC} Updated packages will be downloaded, you will \n  have to commit the update manually"
 
 [ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
 	sleep 1s
