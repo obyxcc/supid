@@ -19,7 +19,7 @@ WB='\033[1;37m' # white bold
 NC='\033[0m' # no color
 
 identifyPackageManager() {
-if [ -x "$(command -v xbps-install)" ]; then PACKAGEMANAGER="xbps" && echo "package manager is $PACKAGEMANAGER" && sleep 5s
+if [ -x "$(command -v xbps-install)" ]; then PACKAGEMANAGER="xbps"
 elif [ -x "$(command -v apt-get)" ]; then PACKAGEMANAGER="apt"
 elif [ -x "$(command -v pacman)" ]; then PACKAGEMANAGER="pacman"
 else echo "Could not locate a compatable package manager on this system" && exit 0
@@ -53,7 +53,7 @@ getUpdates() {
 		"xbps")
 			xbps-install -S ;;
 		"pacman")
-			pacman -Syu --noconfirm --disable-download-timeout --noprogressbar ;;
+			pacman -Sy >> /dev/null && UPDATES=$(pacman -Qu) && NUMUPDATES=$(echo $UPDATES | wc -w) ;;
 		"apt")
 			apt-get update >> /dev/null && UPDATES=$(apt list --upgradable | sed 's/\// /g' | awk '{print $1}' | grep -v "Listing...") && NUMUPDATES=$(echo $UPDATES | wc -w) ;;
 	esac
