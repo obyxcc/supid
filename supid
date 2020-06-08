@@ -37,14 +37,14 @@ install() {
 	esac
 }
 
-update() {
+dlUpdate() {
 	case $PACKAGEMANAGER in
 		"xbps")
-			xbps-install -Syu ;;
+			xbps-install -Du ;;
 		"pacman")
-			pacman -Syu --noconfirm --disable-download-timeout --noprogressbar ;;
+			pacman -Syw ;;
 		"apt")
-			apt-get -y upgrade ;;
+			apt-get update --download-only ;;
 	esac
 }
 
@@ -67,7 +67,7 @@ checkTime() {
 
 commitTransaction() {
 	clear
-	[ $UFLAG ] && update
+	[ $UFLAG ] && dlUpdate
 	[ $IFLAG ] && install
 	[ $PFLAG ] && printf "\n\nPowering off..." && sleep 5s && poweroff
 	exit 0
@@ -77,7 +77,7 @@ displayUsage() {
 	printf "
 usage: autoinst [-h                           show this help message]
                 [-i \"packages\"            install specified packages]
-                [-u                     perform a full system update]
+                [-u              download and cache updated packages]
                 [-p                        poweroff after completion]
                 [-s hour       specify the starting hour, default 03]\n"
  exit 0
