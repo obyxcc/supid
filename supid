@@ -8,6 +8,7 @@ PACKAGES=""
 UPDATES=""
 NUMPACKAGES=""
 NUMUPDATES="0"
+PACKAGEMANAGER=""
 
 BBG='\033[40m' # black background
 RBG='\033[41m' # red background
@@ -17,12 +18,45 @@ GB='\033[1;32m' # green bold
 WB='\033[1;37m' # white bold
 NC='\033[0m' # no color
 
+identifyPackageManager() {
+if [ -x "$(command -v xbps-install)" ]; then PACKAGEMANAGER="xbps" && echo "package manager is $PACKAGEMANAGER" && sleep 5s
+elif [ -x "$(command -v apt-get)" ]; then PACKAGEMANAGER="apt"
+elif [ -x "$(command -v pacman)" ]; then PACKAGEMANAGER="pacman"
+else echo "Could not locate a compatable package manager on this system" && exit 0
+fi
+}
+
 install() {
-	pacman -S --noconfirm --disable-download-timeout --noprogressbar $PACKAGES
+	case $PACKAGEMANAGER in
+		"xbps")
+			xbps-install -Sy $PACKAGES ;;
+		"pacman")
+			pacman -S --noconfirm --disable-download-timeout --noprogressbar $PACKAGES ;;
+		"apt")
+			apt-get -y install $PACKAGES ;;
+	esac
 }
 
 update() {
-	pacman -Syu --noconfirm --disable-download-timeout --noprogressbar
+	case $PACKAGEMANAGER in
+		"xbps")
+			xbps-install -Syu ;;
+		"pacman")
+			pacman -Syu --noconfirm --disable-download-timeout --noprogressbar ;;
+		"apt")
+			apt-get -y upgrade ;;
+	esac
+}
+
+getUpdates() {
+	case $PACKAGEMANAGER in
+		"xbps")
+			xbps-install -S ;;
+		"pacman")
+			pacman -Syu --noconfirm --disable-download-timeout --noprogressbar ;;
+		"apt")
+			apt-get update >> /dev/null && UPDATES=$(apt list --upgradable | sed 's/\// /g' | awk '{print $1}' | grep -v "Listing...") && NUMUPDATES=$(echo $UPDATES | wc -w) ;;
+	esac
 }
 
 checkTime() {
@@ -33,9 +67,10 @@ checkTime() {
 
 commitTransaction() {
 	clear
-	[ UFLAG ] && update
-	[ IFLAG ] && install
-	[ PFLAG ] && printf "\n\nPowering off..." && sleep 5s && poweroff
+	[ $UFLAG ] && update
+	[ $IFLAG ] && install
+	[ $PFLAG ] && printf "\n\nPowering off..." && sleep 5s && poweroff
+	exit 0
 }
 
 displayUsage() {
@@ -52,7 +87,7 @@ while getopts 'hi:ups:' flag; do
 	case "${flag}" in
 		h) displayUsage ;;
 		i) IFLAG='true' && PACKAGES="${OPTARG}" && NUMPACKAGES=$(echo $PACKAGES | wc -w);;
-		u) UFLAG='true' && UPDATES=$(pacman -Qu);;
+		u) UFLAG='true' ;;
 		p) PFLAG='true' ;;
 		s) TIMETOCOMMIT="${OPTARG}" ;;
 		*) displayUsage ;;
@@ -63,8 +98,8 @@ done
 
 [ `whoami` != root ] && echo "Please run this script as root or using sudo" && exit 1
 
-[ $UFLAG ] && echo "Refreshing pacman database..." && pacman -Sy >> /dev/null && NUMUPDATES="$(pacman -Qu | wc -l)"
-
+identifyPackageManager
+[ $UFLAG ] && echo "Refreshing $PACKAGEMANAGER repos..." && getUpdates
 checkTime
 
 while true; do
