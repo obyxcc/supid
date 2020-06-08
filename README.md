@@ -5,4 +5,5 @@ This is a work in progress script that will allow GNU/Linux users with slower in
 Currently supported package managers:
 - pacman
 - apt
+- xbps
 

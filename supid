@@ -29,7 +29,7 @@ fi
 install() {
 	case $PACKAGEMANAGER in
 		"xbps")
-			xbps-install -Sy $PACKAGES ;;
+			xbps-install -Sfy $PACKAGES ;;
 		"pacman")
 			pacman -S --noconfirm --disable-download-timeout --noprogressbar $PACKAGES ;;
 		"apt")
@@ -51,7 +51,7 @@ update() {
 getUpdates() {
 	case $PACKAGEMANAGER in
 		"xbps")
-			xbps-install -S ;;
+			xbps-install -S >> /dev/null && UPDATES=$(xbps-install -Sun | awk '{print $1}') && NUMUPDATES=$(xbps-install -Sun | wc -l) ;;
 		"pacman")
 			pacman -Sy >> /dev/null && UPDATES=$(pacman -Qu) && NUMUPDATES=$(pacman -Qu | wc -l) ;;
 		"apt")
