@@ -8,6 +8,6 @@ Currently supported package managers:
 - xbps
 
 Installation
-> $ git clone https://github.com/retinazer/supid
-> $cd supid
-> # make install
+	$ git clone https://github.com/retinazer/supid
+	$cd supid
+	# make install
