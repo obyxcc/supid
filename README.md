@@ -7,7 +7,7 @@ Currently supported package managers:
 - apt
 - xbps
 
-installation
-> $ git clone https://github.com/retinazer/supid\
-	cd supid\
-	sudo make install
+Installation
+> $ git clone https://github.com/retinazer/supid
+> $cd supid
+> # make install
