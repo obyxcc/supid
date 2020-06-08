@@ -53,7 +53,7 @@ getUpdates() {
 		"xbps")
 			xbps-install -S ;;
 		"pacman")
-			pacman -Sy >> /dev/null && UPDATES=$(pacman -Qu) && NUMUPDATES=$(echo $UPDATES | wc -w) ;;
+			pacman -Sy >> /dev/null && UPDATES=$(pacman -Qu) && NUMUPDATES=$(pacman -Qu | wc -l) ;;
 		"apt")
 			apt-get update >> /dev/null && UPDATES=$(apt list --upgradable | sed 's/\// /g' | awk '{print $1}' | grep -v "Listing...") && NUMUPDATES=$(echo $UPDATES | wc -w) ;;
 	esac
@@ -107,9 +107,9 @@ while true; do
 	clear
 
 printf "${G}╔═[${CB}Scheduled Update and Package Installer of Doom${G}]═╗\n"
-printf "║${GB}${BBG} Transaction will contain:                        ${G}║"
+printf "║${GB}${BBG} Transaction will contain:                        ${G}║\n"
 if [ $UFLAG ]; then
-	printf "\n║${CB} System update%$(( 30 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
+	printf "║${CB} System update%$(( 30 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
 	while IFS= read -r line; do
 	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n"
 		done <<< "$UPDATES"
@@ -121,9 +121,9 @@ if [ $IFLAG ]; then
 done
 fi
 if [ $PFLAG ]; then
-	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} POWEROFF ${G}═╝\n"
+	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} POWEROFF ${G}═╝${NC}\n"
 else
-	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝\n"
+	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}\n"
 fi
 
 [ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
