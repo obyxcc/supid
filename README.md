@@ -10,6 +10,6 @@ Currently supported package managers:
 Installation
 ```
 $ git clone https://github.com/retinazer/supid
-$cd supid
+$ cd supid
 # make install
 ```
