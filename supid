@@ -113,6 +113,7 @@ if [ $UFLAG ]; then
 	while IFS= read -r line && [ $NUMUPDATES -gt 0 ]; do
 	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n"
 		done <<< "$UPDATES"
+		printf "║%$(( 50 ))s║\n║ ${GB}*${NC} Updated packages will be downloaded, you will  ${G}║\n${G}║${NC}   have to commit the update manually%$(( 13 ))s${G}║ \n║%$(( 50 ))s║\n" " "
 fi
 if [ $IFLAG ]; then
 	printf "║${CB} Package installation%$(( 23 - ${#NUMPACKAGES} ))s${NC}$NUMPACKAGES pkgs ${G}║\n" " "
@@ -121,12 +122,10 @@ if [ $IFLAG ]; then
 done
 fi
 if [ $PFLAG ]; then
-	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} POWEROFF ${G}═╝${NC}\n"
+	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} POWEROFF ${G}═╝${NC}"
 else
-	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}\n"
+	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}"
 fi
-
-[ $UFLAG ] && printf "\n${GB}*${NC} Updated packages will be downloaded, you will \n  have to commit the update manually"
 
 [ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
 	sleep 1s
