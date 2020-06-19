@@ -1,5 +1,8 @@
 #! /bin/bash
 
+ROWS=$(tput lines)
+COLS=$(tput cols)
+
 TIMETOCOMMIT=03
 UFLAG=''
 IFLAG=''
@@ -10,20 +13,20 @@ NUMPACKAGES=""
 NUMUPDATES="0"
 PACKAGEMANAGER=""
 
-BBG='\033[40m' # black background
-RBG='\033[41m' # red background
-G='\033[0;32m' # green
-CB='\033[1;36m' # cyan bold
-GB='\033[1;32m' # green bold
-WB='\033[1;37m' # white bold
-NC='\033[0m' # no color
+BBG='\e[40m' # black background
+RBG='\e[41m' # red background
+G='\e[0;32m' # green
+CB='\e[1;36m' # cyan bold
+GB='\e[1;32m' # green bold
+WB='\e[1;37m' # white bold
+NC='\e[0m' # no color
 
 identifyPackageManager() {
-if [ -x "$(command -v xbps-install)" ]; then PACKAGEMANAGER="xbps"
-elif [ -x "$(command -v apt-get)" ]; then PACKAGEMANAGER="apt"
-elif [ -x "$(command -v pacman)" ]; then PACKAGEMANAGER="pacman"
-else echo "Could not locate a compatable package manager on this system" && exit 0
-fi
+	if [ -x "$(command -v xbps-install)" ]; then PACKAGEMANAGER="xbps"
+	elif [ -x "$(command -v apt-get)" ]; then PACKAGEMANAGER="apt"
+	elif [ -x "$(command -v pacman)" ]; then PACKAGEMANAGER="pacman"
+	else echo "Could not locate a compatable package manager on this system" && exit 0
+	fi
 }
 
 install() {
@@ -101,32 +104,40 @@ done
 identifyPackageManager
 [ $UFLAG ] && echo "Refreshing $PACKAGEMANAGER repos..." && getUpdates
 checkTime
-
-while true; do
-	HOUR=$(date "+%H")
-	clear
+clear
 
 printf "${G}╔═[${CB}Scheduled Update and Package Installer of Doom${G}]═╗\n"
+
 printf "║${GB}${BBG} Transaction will contain:                        ${G}║\n"
+
 if [ $UFLAG ]; then
 	printf "║${CB} Download updates%$(( 27 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
 	while IFS= read -r line && [ $NUMUPDATES -gt 0 ]; do
 	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n"
 		done <<< "$UPDATES"
-		printf "║%$(( 50 ))s║\n║ ${GB}*${NC} Updated packages will be downloaded, you will  ${G}║\n${G}║${NC}   have to commit the update manually%$(( 13 ))s${G}║ \n║%$(( 50 ))s║\n" " "
+	printf "║%$(( 50 ))s║\n║ ${GB}*${NC} Updated packages will be downloaded, you will  ${G}║\n${G}║${NC}   have to commit the update manually%$(( 13 ))s${G}║ \n║%$(( 50 ))s║\n" " "
 fi
+
 if [ $IFLAG ]; then
 	printf "║${CB} Package installation%$(( 23 - ${#NUMPACKAGES} ))s${NC}$NUMPACKAGES pkgs ${G}║\n" " "
 	for p in ${PACKAGES[@]}; do
 		printf "║ ${GB}-${NC} $p%$(( 47 - ${#p} ))s${G}║\n" " "
 done
 fi
+
 if [ $PFLAG ]; then
-	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} POWEROFF ${G}═╝${NC}"
+	printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} \e[5mPOWEROFF ${G}═╝${NC}"
 else
-	printf "${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}"
+	printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}"
 fi
 
-[ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
+while true; do
+	HOUR=$(date "+%H")
+	[ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
+	if [ $PFLAG ]; then
+		printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} \e[5mPOWEROFF ${G}═╝${NC}"
+	else
+		printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}"
+	fi
 	sleep 1s
 done
