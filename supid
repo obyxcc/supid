@@ -1,7 +1,6 @@
 #! /bin/bash
 
-ROWS=$(tput lines)
-COLS=$(tput cols)
+TITLE="Scheduled-Update-and-Package-Installer-of-Doom"
 
 TIMETOCOMMIT=03
 UFLAG=''
@@ -13,6 +12,7 @@ NUMPACKAGES=""
 NUMUPDATES="0"
 PACKAGEMANAGER=""
 
+# Colors
 BBG='\e[40m' # black background
 RBG='\e[41m' # red background
 G='\e[0;32m' # green
@@ -52,6 +52,7 @@ dlUpdate() {
 }
 
 getUpdates() {
+	printf "\e[2;2H${BBG}%$(($COLS - 2))s\e[2;2H${GB}${BBG} Refreshing $PACKAGEMANAGER repos... ${G}"
 	case $PACKAGEMANAGER in
 		"xbps")
 			xbps-install -S >> /dev/null && UPDATES=$(xbps-install -Sun | awk '{print $1}') && NUMUPDATES=$(xbps-install -Sun | wc -l) ;;
@@ -86,6 +87,53 @@ usage: autoinst [-h                           show this help message]
  exit 0
 }
 
+setupTerminal() {
+	printf "\e[?25l" #hide cursor
+	stty -echo #hide user input
+}
+
+resetTerminal() {
+	printf "\e[?25h" #unhide cursor
+	stty echo #enable user input
+}
+
+setupScreen() {
+	ROWS=$(tput lines)
+	COLS=$(tput cols)
+	printf "\e[1;1H${G}╔═[${CB}$TITLE${G}]%$((($COLS-6) - ${#TITLE}))s═╗" " " | sed 's/ /═/g'
+	for ((i=0; i<$(($ROWS-2)); i++)); do
+		printf "║\e[$(($COLS-1))C║"
+	done
+	printf "╚%$(($COLS-2))s╝" " " | sed 's/ /═/g'
+	[ $PFLAG ] && printf "\e[$ROWS;$(($COLS-11))H\e ${NC}${RBG} POWEROFF "
+}
+
+resetScreen() {
+	clear
+	setupScreen
+	[ $UFLAG ] && drawUpdates
+	[ $IFLAG ] && drawInstall
+}
+
+drawUpdates() {
+	printf "\e[2;2H${BBG}%$(($COLS - 2))s\e[1G\e[1C${GB}${BBG} Download updates   ${NC}${BBG}$NUMUPDATES pkgs${G}"
+	while IFS= read -r line && [ $NUMUPDATES -gt 0 ]; do
+	    printf "\e[1G\e[1C\e[1B ${GB}-${NC} $line${G}"
+		done <<< "$UPDATES"
+	printf "\e[1G\e[1C\e[2B ${GB}*${NC} Updated packages will be downloaded, you will have to commit the update manually"
+}
+
+drawInstall() {
+	printf "\e[1G\e[1C\e[2B${BBG}%$(($COLS - 2))s\e[1G\e[1C${GB}${BBG} Package installation   ${NC}${BBG}$NUMPACKAGES pkgs${G}"
+	for p in ${PACKAGES[@]}; do
+		printf "\e[1G\e[1C\e[1B ${GB}-${NC} $p${G}"
+	done
+}
+
+drawTime() {
+	printf "\e[$ROWS;4H${G}[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]"
+}
+
 while getopts 'hi:ups:' flag; do
 	case "${flag}" in
 		h) displayUsage ;;
@@ -98,46 +146,20 @@ while getopts 'hi:ups:' flag; do
 done
 
 [ $OPTIND -eq 1 ] && displayUsage && exit 1
-
 [ `whoami` != root ] && echo "Please run this script as root or using sudo" && exit 1
 
 identifyPackageManager
-[ $UFLAG ] && echo "Refreshing $PACKAGEMANAGER repos..." && getUpdates
 checkTime
-clear
-
-printf "${G}╔═[${CB}Scheduled Update and Package Installer of Doom${G}]═╗\n"
-
-printf "║${GB}${BBG} Transaction will contain:                        ${G}║\n"
-
-if [ $UFLAG ]; then
-	printf "║${CB} Download updates%$(( 27 - ${#NUMUPDATES} ))s${NC}$NUMUPDATES pkgs ${G}║\n" " "
-	while IFS= read -r line && [ $NUMUPDATES -gt 0 ]; do
-	    printf "║ ${GB}-${NC} $line%$(( 47 - ${#line} ))s${G}║\n"
-		done <<< "$UPDATES"
-	printf "║%$(( 50 ))s║\n║ ${GB}*${NC} Updated packages will be downloaded, you will  ${G}║\n${G}║${NC}   have to commit the update manually%$(( 13 ))s${G}║ \n║%$(( 50 ))s║\n" " "
-fi
-
-if [ $IFLAG ]; then
-	printf "║${CB} Package installation%$(( 23 - ${#NUMPACKAGES} ))s${NC}$NUMPACKAGES pkgs ${G}║\n" " "
-	for p in ${PACKAGES[@]}; do
-		printf "║ ${GB}-${NC} $p%$(( 47 - ${#p} ))s${G}║\n" " "
-done
-fi
-
-if [ $PFLAG ]; then
-	printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} \e[5mPOWEROFF ${G}═╝${NC}"
-else
-	printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}"
-fi
+clear  
+[ $UFLAG ]&& getUpdates
+resetScreen
 
 while true; do
 	HOUR=$(date "+%H")
+	[ ! $(tput cols) -eq $COLS ] && resetScreen
+	[ ! $(tput lines) -eq $ROWS ] && resetScreen
+	trap 'resetTerminal' EXIT
+	drawTime
 	[ $HOUR -eq $TIMETOCOMMIT ] && commitTransaction
-	if [ $PFLAG ]; then
-		printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]══${WB}${RBG} \e[5mPOWEROFF ${G}═╝${NC}"
-	else
-		printf "\e[2K\e[52D${G}╚═[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]═════════════╝${NC}"
-	fi
 	sleep 1s
 done
