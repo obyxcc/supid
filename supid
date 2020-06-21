@@ -88,11 +88,13 @@ usage: autoinst [-h                           show this help message]
 }
 
 setupTerminal() {
+	clear  
 	printf "\e[?25l" #hide cursor
 	stty -echo #hide user input
 }
 
 resetTerminal() {
+	clear
 	printf "\e[?25h" #unhide cursor
 	stty echo #enable user input
 }
@@ -150,7 +152,7 @@ done
 
 identifyPackageManager
 checkTime
-clear  
+setupTerminal
 [ $UFLAG ]&& getUpdates
 resetScreen
 
