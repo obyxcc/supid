@@ -13,13 +13,13 @@ NUMUPDATES="0"
 PACKAGEMANAGER=""
 
 # Colors
-BBG='\e[40m' # black background
-RBG='\e[41m' # red background
-G='\e[0;32m' # green
+BBG='\e[40m'  # black background
+RBG='\e[41m'  # red background
+G='\e[0;32m'  # green
 CB='\e[1;36m' # cyan bold
 GB='\e[1;32m' # green bold
 WB='\e[1;37m' # white bold
-NC='\e[0m' # no color
+NC='\e[0m'    # no color
 
 identifyPackageManager() {
 	if [ -x "$(command -v xbps-install)" ]; then PACKAGEMANAGER="xbps"
@@ -107,7 +107,7 @@ setupScreen() {
 		printf "║\e[$(($COLS-1))C║"
 	done
 	printf "╚%$(($COLS-2))s╝" " " | sed 's/ /═/g'
-	[ $PFLAG ] && printf "\e[$ROWS;$(($COLS-11))H\e ${NC}${RBG} POWEROFF "
+	[ $PFLAG ] && printf "\e[$ROWS;$(($COLS-11))H\e ${WB}${RBG} POWEROFF "
 }
 
 resetScreen() {
@@ -118,7 +118,7 @@ resetScreen() {
 }
 
 drawUpdates() {
-	printf "\e[2;2H${BBG}%$(($COLS - 2))s\e[1G\e[1C${GB}${BBG} Download updates   ${NC}${BBG}$NUMUPDATES pkgs${G}"
+	printf "\e[2;2H${BBG}%$(($COLS - 2))s\e[1G\e[1C${GB}${BBG} [$NUMUPDATES] Download updates${NC}"
 	while IFS= read -r line && [ $NUMUPDATES -gt 0 ]; do
 	    printf "\e[1G\e[1C\e[1B ${GB}-${NC} $line${G}"
 		done <<< "$UPDATES"
@@ -126,14 +126,14 @@ drawUpdates() {
 }
 
 drawInstall() {
-	printf "\e[1G\e[1C\e[2B${BBG}%$(($COLS - 2))s\e[1G\e[1C${GB}${BBG} Package installation   ${NC}${BBG}$NUMPACKAGES pkgs${G}"
+	printf "\e[1G\e[1C\e[2B${BBG}%$(($COLS - 2))s\e[1G\e[1C${GB}${BBG} [$NUMPACKAGES] Package installation${NC}"
 	for p in ${PACKAGES[@]}; do
 		printf "\e[1G\e[1C\e[1B ${GB}-${NC} $p${G}"
 	done
 }
 
 drawTime() {
-	printf "\e[$ROWS;4H${G}[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]"
+	printf "\e[$ROWS;3H${G}[${CB}Time  ${NC}$(date "+%H:%M:%S")${G}]═[${CB}Continuing  ${NC}$TIMETOCOMMIT:00${G}]"
 }
 
 while getopts 'hi:ups:' flag; do
